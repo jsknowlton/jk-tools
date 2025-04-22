@@ -529,7 +529,7 @@ function AltDir {
 }
 
 function AltBC {
-    $bc = "C:\Program Files\Beyond Compare 4\BCompare.exe"
+    $bc = "C:\Program Files\Beyond Compare 5\BCompare.exe"
     if (-not (Test-Path $bc)) {
         return
     }
@@ -537,4 +537,11 @@ function AltBC {
     $altDir = Get-NextAltDir
 
     . $bc $altDir $(Get-Location) /filters="-.git\;-.vs\;-packages\;-bin\;-obj\;-.bin\;-Publish\;-build\;-.github\;-.githooks\"
+}
+
+function zipMasterMenu {
+    pushd ~/source/repos
+    rm.exe -rf GRC_MMNet_Archive.7z
+    7z.exe a -t7z GRC_MMNet_Archive.7z GRC_MMNet\ -mx0 -xr!bin -xr!obj -xr!packages -xr!'.vs' -xr!'.azuredevops' -xr!'.git'
+    popd
 }

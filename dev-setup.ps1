@@ -21,12 +21,12 @@ function installChocolatey {
 }
 
 function installTools {
-    choco upgrade poshgit
+    # choco upgrade poshgit
     #choco upgrade netfx-4.6.2-devpack
     #choco upgrade netfx-4.7.1-devpack
     choco upgrade 7zip.install
-    choco upgrade vscode
-    choco upgrade googlechrome
+    # choco upgrade vscode
+    # choco upgrade googlechrome
     choco upgrade notepadplusplus
     # choco upgrade LinkShellExtension
     #choco upgrade vswhere
@@ -35,11 +35,12 @@ function installTools {
     choco upgrade beyondcompare
     choco upgrade sysinternals
     #choco upgrade visualstudio2019professional
+    #choco upgrade visualstudio2022professional
     #choco upgrade visualstudio2019-remotetools
     #choco upgrade microsoft-windows-terminal
-    choco upgrade NugetPackageExplorer
+    # choco upgrade NugetPackageExplorer
     choco upgrade Everything
-    choco upgrade vcredist2010
+    # choco upgrade vcredist2010
 
     # choco upgrade sql-server-2022
     # choco upgrade sql-server-management-studio

@@ -7,7 +7,7 @@ $grcServers = @(
 )
 
 $interval = 10
-$pingCount = 3
+$pingCount = 1
 $file = "~\grc_ping.txt"
 # overwrite file to ensure a clean file to start
 # out-file -filepath $file
@@ -18,13 +18,15 @@ while (1) {
     get-date
     foreach ($grcServer in $grcServers) {
         # ping -n $pingCount $grcServer | tee-object $file -Append
+        # ping -n $pingCount $grcServer
+        Test-Connection -Count $pingCount $grcServer
         # test-netconnection $grcServer | tee-object $file -Append
-        $result = [PSCustomObject]@{
-            Server    = $grcServer
-            Reachable = Test-Connection -Quiet $grcServer
-        }
-        $results += $result
+        # $result = [PSCustomObject]@{
+        #     Server    = $grcServer
+        #     Reachable = Test-Connection -Quiet $grcServer
+        # }
+        # $results += $result
     }
-    Write-Output $results | Format-Table 
+    # Write-Output $results | Format-Table 
     Start-Sleep $interval
 }
