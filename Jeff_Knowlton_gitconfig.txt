@@ -4,7 +4,13 @@
 	al = config --get-regexp alias
 	amend = commit --amend
 	b = branch -vv
-	bnt = !git branch -vv | grep -v origin
+	# b = branch -vv --format='%(HEAD)%(color:yellow)%(refname:short) %(color:bold green)%(committerdate:relative) %(color:magenta)%(authorname)%(color:reset) %(color:blue)%(subject)' --color=always
+	# bd = branch --sort=-committerdate --format='%(HEAD)%(color:yellow)%(refname:short) %(color:bold green)%(committerdate:relative) %(color:red)%(objectname:short)' --color=always
+	# bd = branch --sort=-committerdate --format='%(HEAD)%(align:80)%(color:yellow)%(refname:short)%(end) %(color:red)%(objectname:short) %(color:bold green)%(committerdate:relative)' --color=always
+	bd = branch --sort=-committerdate --format='%(HEAD)%(align:60)%(color:yellow)%(refname:short) %(color:bold green)%(committerdate:relative)%(end) %(color:red)%(objectname:short) %(color:white)%(subject) ' --color=always
+	# bd = branch --sort=-committerdate --format='%(HEAD)%(color:yellow)%(refname:short) %(color:bold green)%(committerdate:relative)'
+	# bnt = !git branch -vv | grep -v origin
+	bnt = !git b | grep -v origin
 	bl = blame -w -M -C
 	bra = branch -rav
 	ba = branch -avv
@@ -35,6 +41,8 @@
 	# ll = log --oneline --max-count=25
 	ma = merge --abort
 	mt = mergetool
+	mm = merge main --no-edit
+	mmp = !git merge main --no-edit && git push
 	pa = push -u origin --all
 	parent = "!git show-branch | grep '*' | grep -v \"$(git rev-parse --abbrev-ref HEAD)\" | head -n1 | sed 's/.*\\[\\(.*\\)\\].*/\\1/' | sed 's/[\\^~].*//' #"
 	pick = add -p
@@ -49,9 +57,12 @@
 	rbd = rebase develop
 	rbdcl = rebase develop -s recursive -X ours
 	rbdkl = rebase develop -s recursive -X theirs
+	rbmcl = rebase main -s recursive -X ours
+	rbmkl = rebase main -s recursive -X theirs
 	rbcl = rebase -s recursive -X ours
 	rbkl = rebase -s recursive -X theirs
 	rc = rebase --continue
+	recent = "!r() { count=$1; git for-each-ref --sort=-committerdate refs/heads --format='%(HEAD)%(color:yellow)%(refname:short)|%(color:bold green)%(committerdate:relative)|%(color:red)%(objectname:short)|%(color:blue)%(subject)|%(color:magenta)%(authorname)%(color:reset)' --color=always --count=${count:=10} | column -ts'|';}; r"
 	remotes = remote -v show
 	s = -p status
 	save = !git add -A && git commit -m 'SAVEPOINT'
@@ -62,9 +73,10 @@
 	stage = add
 	standup = !me=$(git config --global --get user.name) && git log --since yesterday --oneline --author \"$me\"
 	stats = diff --stat
-	sync = !git fetch upstream -v && git fetch origin -v && git checkout develop && git merge upstream/develop
+	sync = !git fetch upstream -v && git fetch origin -v && git checkout main && git merge upstream/main
 	tl = tag -l -n
 	tdel = "!f() { git tag --delete $1; git push --delete origin $1; }; f"
+	test = !echo Which shell?
 	undo = reset HEAD~1 --mixed
 	undo-commit = reset --soft HEAD~1
 	unstage = reset HEAD
@@ -95,11 +107,12 @@
 [gui]
 [push]
 	default = upstream
+	autoSetupRemote = true
 [url "https://"]
 	insteadOf = git://
 [user]
-	email = jeff@jsknowlton.com
 	name = Jeff Knowlton
+	email = jknowlton@OneCECO.com
 [brance]
 	autosetuprebase = always
 [fetch]
@@ -109,17 +122,17 @@
 [diff]
 	tool = bc3
 [difftool "bc3"]
-	path = c:/Program Files/Beyond Compare 4/bcomp.exe
+	path = c:/Program Files/Beyond Compare 5/bcomp.exe
 	trustExitCode = true
 [merge]
 	tool = bc3
 [mergetool "bc3"]
-	path = c:/Program Files/Beyond Compare 4/bcomp.exe
+	path = c:/Program Files/Beyond Compare 5/bcomp.exe
 	trustExitCode = true
 [difftool "sourcetree"]
-	cmd = 'C:/Program Files/Beyond Compare 4/BComp.exe' \"$LOCAL\" \"$REMOTE\"
+	cmd = 'C:/Program Files/Beyond Compare 5/BComp.exe' \"$LOCAL\" \"$REMOTE\"
 [mergetool "sourcetree"]
-	cmd = 'C:/Program Files/Beyond Compare 4/BComp.exe' \"$LOCAL\" \"$REMOTE\" \"$BASE\" -o \"$MERGED\"
+	cmd = 'C:/Program Files/Beyond Compare 5/BComp.exe' \"$LOCAL\" \"$REMOTE\" \"$BASE\" -o \"$MERGED\"
 	trustExitCode = true
 [http]
 	sslbackend = schannel
@@ -131,3 +144,9 @@
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
 
+[safe]
+	directory = C:/Users/jknowlton/source/repos/jk-tools
+	directory = C:/Users/jknowlton/source/repos/GRC_MMNet
+	directory = C:/Users/jknowlton/source/repos/FieldLog
+[branch]
+	sort = -committerdate
