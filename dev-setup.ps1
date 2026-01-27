@@ -22,6 +22,7 @@ function installChocolatey {
 
 function installTools {
     # choco upgrade poshgit
+    #choco upgrade netfx-4.8-devpack
     #choco upgrade netfx-4.6.2-devpack
     #choco upgrade netfx-4.7.1-devpack
     choco upgrade 7zip.install

@@ -102,7 +102,7 @@ function Find-File () {
     if ($Search) {
         $start = Get-Date
         $results = @()
-        Get-ChildItem -Recurse $($Search) | 
+        Get-ChildItem -Recurse $($Search) -ErrorAction SilentlyContinue | 
         ForEach-Object { 
             $result = [PSCustomObject]@{
                 FullName      = $_.FullName
@@ -258,25 +258,6 @@ function Get-SolutionFile {
     return $sln
 }
 
-# function Start-VS2017 {
-#     $devenv = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\devenv.exe"
-#     $sln = Get-SolutionFile
-#     # $sln = $(dir *.sln | select -First 1 | % {$_.FullName})
-#     & $devenv $sln
-# }
-# New-Alias vs17 Start-VS2017
-
-function Start-VS2019 {
-    ensureVsWhere
-    # $devenv = "C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\Common7\IDE\devenv.exe"
-    $devenv = vswhere -property productPath | Where-Object { $_.contains('2019') }
-    if ($devenv) {
-        $sln = Get-SolutionFile
-        & $devenv $sln
-    }
-}
-New-Alias vs19 Start-VS2019
-
 function Start-VS2022 {
     ensureVsWhere
     $devenv = vswhere -property productPath | Where-Object { $_.contains('2022') }
@@ -299,8 +280,15 @@ New-Alias vs Start-VSLatest
 
 function Clean {
     [CmdletBinding(SupportsShouldProcess)]
-    param()
-    Get-ChildItem -Recurse -Include 'bin', 'obj', 'publish' |
+    param(
+        [switch]$Packages
+    )
+    $folders = @("bin", "obj", "publish")
+    if ($Packages) {
+        $folders += "packages"
+    }
+    
+    Get-ChildItem -Recurse -Include $folders |
     ForEach-Object {
         if ((Get-ChildItem $_.Parent.FullName | Where-Object { $_.Name -Like "*.sln" -or $_.Name -Like "*.*proj" }).Length -gt 0) {
             if ($PSCmdlet.ShouldProcess($_, "Delete folder")) {
@@ -315,18 +303,22 @@ function Build {
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [switch]$Release, 
+        [switch]$x64, 
         [switch]$Rebuild, 
+        [switch]$Publish,
         [switch]$Clean, 
         [switch]$RefreshNugetPackages,
         [switch]$Tail
     )
 
-    $sln = Get-SolutionFile
+    $slnFullPath = Get-SolutionFile
+    $sln = Split-Path -Path $slnFullPath -Leaf
+    
     if (-not (Test-Path $sln)) {
         throw "No solutions found to build"
     }
 
-    ensureMsbuildInPath
+    # ensureMsbuildInPath
 
     if ($Clean) {
         Clean
@@ -334,12 +326,18 @@ function Build {
 
     # Defaults
     $config = "Debug"
-    # $platform = "x64"
-    $platform = $null
+    $platform = "x86"
+    # $platform = $null
 
     if ($Release) {
         $config = "Release"
     }
+
+    if ($x64) {
+        $platform = "x64"
+    }
+
+    
 
     # Search the .sln file for x64 platform, if not found use default
     # if ($platform -eq "x64") {
@@ -358,12 +356,20 @@ function Build {
     $cmd = "msbuild.exe"
     $params = @()
     $params += "$sln"
+    $tasks = @()
     if ($Rebuild) {
-        $params += "-t:rebuild"
+        $tasks += "rebuild"
+        # $params += "-t:rebuild"
     }
     else {
-        $params += "-t:build"
+        $tasks += "rebuild"
+        # $params += "-t:build"
     }
+    if ($Publish) {
+        $tasks += "publish"
+    }
+
+    $params += "-t:$($tasks -join ',')"
     $params += "-p:StopOnFirstFailure=true"
     $params += "-p:configuration=$config"
     if ($platform) {
@@ -388,6 +394,7 @@ function Build {
         }
     }
 }
+
 function gitBash {
     & 'C:\Program Files\Git\git-bash.exe'
 }
@@ -494,6 +501,7 @@ function nullterm {
 }
 
 function Get-NextAltDir {
+    # AltDir = parent folder (with numeric suffix) containing repositories (e.g. ~/source/repos, ~/source/repos2)
     $parentDirName = Split-Path -Path (Get-Location).Path
     $currentDirName = Split-Path -Path (Get-Location).Path -Leaf
     $parentDirNameLastChar = $parentDirName.Substring($parentDirName.Length - 1)
@@ -528,20 +536,80 @@ function AltDir {
     Set-Location $(Get-NextAltDir)
 }
 
+function crp {
+    pushd ~/source/repos
+}
+
 function AltBC {
     $bc = "C:\Program Files\Beyond Compare 5\BCompare.exe"
     if (-not (Test-Path $bc)) {
         return
     }
+    $filters = @()
+    $filters += "-*.user"
+    $filters += "-.git\"
+    $filters += "-.vs\"
+    $filters += "-.vscode\"
+    $filters += "-.azuredevops\"
+    $filters += "-.bin\"
+    $filters += "-.github\"
+    $filters += "-.githooks\"
+    # $filters += "-SqlServerTypes\"
+    $filters += "-TestResults\"
+    $filters += "-packages\"
+    $filters += "-bin\"
+    $filters += "-obj\"
+    $filters += "-Publish\"
+    $filters += "-build\"
 
     $altDir = Get-NextAltDir
 
-    . $bc $altDir $(Get-Location) /filters="-.git\;-.vs\;-packages\;-bin\;-obj\;-.bin\;-Publish\;-build\;-.github\;-.githooks\"
+    # . $bc $altDir $(Get-Location) /filters="-*.user;-.git\;-.vs\;-.vscode\;-.azuredevops\;-SqlServerTypes\;-TestResults\;-packages\;-bin\;-obj\;-.bin\;-Publish\;-build\;-.github\;-.githooks\"
+    . $bc $altDir $(Get-Location) /filters="$($filters -join ';')"
 }
 
-function zipMasterMenu {
-    pushd ~/source/repos
-    rm.exe -rf GRC_MMNet_Archive.7z
-    7z.exe a -t7z GRC_MMNet_Archive.7z GRC_MMNet\ -mx0 -xr!bin -xr!obj -xr!packages -xr!'.vs' -xr!'.azuredevops' -xr!'.git'
+function zipBranch {
+    $branchName = $(Get-GitBranch)
+    $baseName = $(split-path -path ($(Get-Location).Path) -leaf)
+    $archiveName = "$($baseName)_$($branchName)_$((Get-Date).ToString("yyyyMMdd")).7z"
+    Write-Host "ArchiveName = $archiveName"
+    pushd ..
+    rm.exe -rf $archiveName *> $null
+    7z.exe a -t7z $archiveName $baseName\ -mx0 -xr!bin -xr!obj -xr!packages -xr!'.vs' -xr!'.azuredevops' -xr!'.git'
     popd
 }
+
+# function zipMasterMenu {
+#     param (
+#         [string]$branchName
+#     )
+
+#     $baseName = "GRC_MMNet_"
+#     $archiveName = "$($baseName)Archive.7z"
+
+#     if ($branchName) {
+#         $archiveName = "$($baseName)$($branchName)_$((Get-Date).ToString("yyyyMMdd")).7z"
+#     }
+#     pushd ~/source/repos
+#     rm.exe -rf $archiveName *> $null
+#     7z.exe a -t7z $archiveName GRC_MMNet\ -mx0 -xr!bin -xr!obj -xr!packages -xr!'.vs' -xr!'.azuredevops' -xr!'.git'
+#     popd
+# }
+
+# function zipReporting {
+#     param (
+#         [string]$branchName
+#     )
+
+#     $baseName = "GRC_Reporting_"
+#     $archiveName = "$($baseName)Archive.7z"
+
+#     if ($branchName) {
+#         $archiveName = "$($baseName)$($branchName)_$((Get-Date).ToString("yyyyMMdd")).7z"
+#     }
+#     pushd ~/source/repos
+#     rm.exe -rf $archiveName *> $null
+#     7z.exe a -t7z $archiveName GRC_Reporting\ -mx0 -xr!bin -xr!obj -xr!packages -xr!'.vs' -xr!'.azuredevops' -xr!'.git'
+#     popd
+# }
+
