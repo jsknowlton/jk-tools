@@ -470,6 +470,13 @@ function Get-IISExpress {
     Get-Process -Name iisexpress | Format-Table id, mainwindowtitle -AutoSize
 }
 
+function FormCount{
+    $searchItems = "frm*.cs","frm*.vb"
+    foreach ($searchItem in $searchItems){
+        Write-Host "$($searchItem) = $((ls -Recurse $searchItem|measure).Count)"
+    }
+}
+
 # function Get-SolutionPlatform {
 #     $slns = Get-ChildItem *.sln -Recurse
 #     # $results = @()
@@ -484,6 +491,7 @@ function Get-IISExpress {
 
 #     # $results
 # }
+
 
 function Start-Sleep($seconds) {
     $doneDT = (Get-Date).AddSeconds($seconds)
