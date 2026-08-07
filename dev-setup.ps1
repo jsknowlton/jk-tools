@@ -16,7 +16,7 @@ function installChocolatey {
 
     $env:Path += ";$env:ALLUSERSPROFILE\chocolatey\bin"
     choco feature enable -n=allowGlobalConfirmation *> $null
-    choco feature enable -n=failOnAutoUninstaller *> $null
+    # choco feature enable -n=failOnAutoUninstaller *> $null
     choco feature enable -n=useRememberedArgumentsForUpgrades *> $null
 }
 

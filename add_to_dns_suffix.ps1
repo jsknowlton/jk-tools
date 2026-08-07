@@ -4,10 +4,14 @@
 # This key is used for non-domain machines
 $key = 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters'
 
+# $newDomains = @(
+# 	"grc.local",
+# 	"foobar.com",
+# 	"foobar.baz.com"
+# )
+
 $newDomains = @(
-	"foo.com",
-	"foobar.com",
-	"foobar.baz.com"
+	"grc.local"
 )
 
 # Get existing search list
