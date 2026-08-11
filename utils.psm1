@@ -545,7 +545,11 @@ function AltDir {
 }
 
 function crp {
-    pushd ~/source/repos
+    Push-Location ~/source/repos
+}
+
+function cdb {
+    Push-Location d:\db\backup
 }
 
 function AltBC {
