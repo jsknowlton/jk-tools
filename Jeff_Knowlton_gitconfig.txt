@@ -12,14 +12,19 @@
 	# bnt = !git branch -vv | grep -v origin
 	bnt = !git b | grep -v origin
 	bl = blame -w -M -C
-	bra = branch -rav
 	ba = branch -avv
 	bdel = "!f() { git branch -D $1; git push origin -d $1; }; f"
 	branches = branch -rav
+	br = branch -vv
+	# local branches without remote
+	blo = "!git branch --format '%(refname:short) %(upstream)' | awk '{if (!$2) print $1;}'"
+	# remote branches without local
+	bro = "!git fetch; grep -v -F -f <(git for-each-ref --format='%(refname:lstrip=2)' refs/heads) <(git for-each-ref --format='%(refname:lstrip=3)' refs/remotes/origin) | grep -vF HEAD"
 	c = checkout
 	cb = checkout -b
 	changed = status -sb
 	cm = !git add -A && git commit -m
+	cne = commit --no-edit
 	dt = difftool --dir-diff
 	diff-branches = log --left-right --graph --cherry-pick --oneline
 	f = fetch
@@ -42,6 +47,8 @@
 	ma = merge --abort
 	mt = mergetool
 	mm = merge main --no-edit
+	mmcl = merge main --no-edit -s recursive -X theirs
+	mmkl = merge main --no-edit -s recursive -X ours
 	mmp = !git merge main --no-edit && git push
 	pa = push -u origin --all
 	parent = "!git show-branch | grep '*' | grep -v \"$(git rev-parse --abbrev-ref HEAD)\" | head -n1 | sed 's/.*\\[\\(.*\\)\\].*/\\1/' | sed 's/[\\^~].*//' #"
@@ -84,7 +91,7 @@
 	v = !git tag -n --sort=-refname | head -n 20 | sort
 	wdiff = diff --word-diff
 	who = shortlog -s -e --
-	wipe = !git add -A && git commit -qm 'WIPE SAVEPOINT' && git reset HEAD~1 --hard
+	wipe = !git add -A && git commit -qm 'WIPE SAVEPOINT' && git reset HEAD~1 --hard # run git log --reflog to see hidden commit
 	branch = auto
 	diff = auto
 	status = auto
@@ -103,7 +110,7 @@
 	untracked = cyan
 [core]
 	autocrlf = true
-	editor = vim
+	editor = 'C:\\Program Files\\Notepad++\\notepad++.exe' -multiInst -notabbar -nosession -noPlugin
 [gui]
 [push]
 	default = upstream
@@ -150,3 +157,7 @@
 	directory = C:/Users/jknowlton/source/repos/FieldLog
 [branch]
 	sort = -committerdate
+[git-up "fetch"]
+	prune = true
+[git-up "updates"]
+	check = true
