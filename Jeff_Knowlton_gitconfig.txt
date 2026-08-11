@@ -155,6 +155,7 @@
 	directory = C:/Users/jknowlton/source/repos/jk-tools
 	directory = C:/Users/jknowlton/source/repos/GRC_MMNet
 	directory = C:/Users/jknowlton/source/repos/FieldLog
+	directory = C:/Users/admin.jknowlton/source/repos/GRC_SQL
 [branch]
 	sort = -committerdate
 [git-up "fetch"]
