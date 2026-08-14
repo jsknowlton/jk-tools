@@ -31,3 +31,9 @@ ipconfig /flushdns *> $null
 # sleep 5
 # ipconfig /all
 (Get-DnsClientGlobalSetting).SuffixSearchList
+
+net use p: /d
+net use p: \\s-azp21.grc.local\mmimport
+net use t: /d
+net use t: \\s-azsql.grc.local\d$\Backup
+
